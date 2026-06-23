@@ -1,4 +1,3 @@
 
 
-Uploading WhatsApp Video 2026-06-23 at 11.05.21 PM.mp4…
-
+<video src="WhatsApp%20Video%202026-06-23%20at%2011.05.21%20PM.mp4" controls width="100%"></video>
