@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+
+<html class="fullscreen" lang="en">
+
+  <head>
+    
+    <title>A&nbspb&nbspo&nbspz&nbspe&nbspn&nbspa</title>
+    <meta charset="UTF-8">
+    <!--/* just for responsive display */-->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="assets/favicon.png">
+    
+    <link rel="stylesheet" type="text/css" href="style.css">
+      <!--/* for GASP library -> GASP for animations and so what  */-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.5/gsap.min.js" integrity="sha512-cOH8ndwGgPo+K7pTvMrqYbmI8u8k6Sho3js0gOqVWTmQMlLIi6TbqGWRTpf1ga8ci9H3iPsvDLr4X7xwhC/+DQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <!--/* a tool to make the browser understand what is the import map -> we must translate first for understanding importmap  */-->
+    <script async src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"></script>
+    <!--/* import map nafsa7a  -> -out menu- carrying -three js- it self */-->
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://unpkg.com/three@0.151.0/build/three.module.js",
+          "three/addons/": "https://unpkg.com/three@0.151.0/examples/jsm/"
+        }
+      }
+    </script>
+    <!--/* niplle just a small library for joystick */-->
+    <script src="https://cdn.jsdelivr.net/npm/nipplejs@0.10.1/dist/nipplejs.min.js"></script>
+  </head>
+
+  <body class="fullscreen">
+    <div class="page-loader">
+      <div class="loader-container">
+        <div class="base">
+          <span class="loader-hex-edge h6"></span>
+          <span class="loader-hex-edge h3"></span>
+        </div>
+        <div class="base base-two">
+          <span class="loader-hex-edge h1"></span>
+          <span class="loader-hex-edge h4"></span>
+        </div>
+        <div class="base base-three">
+          <span class="loader-hex-edge h5"></span>
+          <span class="loader-hex-edge h2"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="fullscreen container">
+      <canvas class="fullscreen canvas"></canvas>
+    </div>
+    <div style="
+  position: fixed;
+  top: 140px; 
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 12px 24px;
+  font-family: inherit;
+  font-size: 16px;
+  z-index: 999;
+  display: flex;
+  gap: 30px;
+  align-items: center;
+">
+
+  <div id="coinTask" style="
+    padding: 8px 16px;
+    border-radius: 10px;
+    background-color:rgb(247, 201, 72,0.2);
+    color: black;
+    font-weight: bold;
+    border: 2px solid black;
+    transition: all 0.3s ease;
+  ">
+    Collect 13 Coins
+  </div>
+
+  <div id="ringTask" style="
+    padding: 8px 16px;
+    border-radius: 10px;
+    background-color:rgb(132, 204, 22,0.2);
+    color: black;
+    font-weight: bold;
+    border: 2px solid black;
+    transition: all 0.3s ease;
+  ">
+    Pass Through 3 Rings
+  </div>
+
+</div>
+
+<style>
+  .completed {
+    background-color: #4caf50 !important;
+    color: white !important;
+    box-shadow: 0 0 15px #4caf50;
+    transform: scale(1.1);
+  }
+</style>
+
+    <div
+    id="score"
+    style="
+      position: absolute;
+      top: 10%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-family: inherit;
+      font-size: 1rem;
+      color: #000;
+      pointer-events: none;
+      z-index: 999;
+    "
+  >Loading...  </div>
+  <!-- level indicator (battery) -->
+  <div
+    id="level-indicator"
+    style="
+      position: absolute;
+      bottom: 600px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 200px;
+      height: 40px;
+      border: 4px solid #000;
+      border-radius: 6px;
+      box-sizing: border-box;
+      font-family: inherit;
+      font-size: 1.5rem;
+      color: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      z-index: 999;
+      background: rgba(255,255,255,0.3);
+    "
+  >
+    <!-- fill battry -->
+    <div
+      id="level-fill"
+      style="
+        position: absolute;
+        left: 4px;
+        top: 4px;
+        bottom: 4px;
+        width: 0%;
+        background: #98BF06;
+        border-radius: 2px;
+        transition: width 0.3s ease;
+      "
+    ></div>
+    <!-- little nub on the right -->
+    <div
+      style="
+        position: absolute;
+        right: -12px;
+        top: 25%;
+        width: 12px;
+        height: 50%;
+        background: #000;
+        border-radius: 2px;
+      "
+    ></div>
+    <!-- text on top -->
+    <span id="level-text" style="position: relative; z-index:1;">Level 1</span>
+  </div>
+  <div id="level-up" style="
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 80px;
+  color: black;
+  font-family: inherit;
+  z-index: 9999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s ease, transform 0.5s ease;
+">
+  LEVEL UP!
+</div>
+
+  </div>
+  
+    <div id="zone-joystick" class="joystick"></div>
+
+<!--/* 4 buttons in the right side */-->
+
+    <div class="hex-container hex-music">
+      <img 
+       id="sound"
+       class="icon" 
+       src="assets/icons/sound-off.svg" 
+       alt="Sound On">
+      <div class="hex hex-one"></div>
+      <div class="hex hex-two"></div>
+    </div>
+
+    <div class="hex-container hex-info">
+      <img 
+       class="icon" 
+       src="assets/icons/info.svg" 
+       alt="Info">
+      <div class="hex hex-one"></div>
+      <div class="hex hex-two"></div>
+    </div>
+
+    <div class="hex-container hex-speed">
+      <img
+       class="icon" 
+       src="assets/icons/speed.svg" 
+       alt="Speed">
+      <div class="hex hex-one"></div>
+      <div class="hex hex-two"></div>
+    </div>
+
+    <div class="hex-container hex-birds-eye">
+      <img 
+       class="icon" 
+       src="assets/icons/eye.svg" 
+       alt="Birds Eye">
+      <div class="hex hex-one"></div>
+      <div class="hex hex-two"></div>
+    </div>
+
+    <div class="info-modal-page">
+      <div class="info-box">
+        <div class="info-close">
+          <img 
+           class="icon" 
+           src="assets/icons/exit.svg" 
+           alt="Exit Icon">
+          <div class="hex hex-one"></div>
+          <div class="hex hex-two"></div>
+        </div>
+        <h1>Tayara - ECU</h1>
+        <p>
+          This project for <b>Dr.mohamed elmowafy</b> was created by our team 
+          <br><strong>Abdelrahman</strong><br> Haneen, Amr , Mostafa, Amira, Renad Eid, Doha
+          <br><br>
+          - A&nbspb&nbspo&nbspz&nbspe&nbspn&nbspa
+        </p>
+      </div>
+    </div>
+
+    <script src="main.js" type="module"></script>
+
+  </body>
+
+</html>
